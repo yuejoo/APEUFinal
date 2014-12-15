@@ -3,12 +3,9 @@
 #include <unistd.h>
 #include <sys/types.h>       
 #include <fcntl.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
 #include <string.h>
-#define BUF_SIZ 64
-#define ENCRYPT 1
-#define DECRYPT 0
+#include "main.h"
+#define TRUE 1
 
 
 int xflg,cflg;
@@ -35,6 +32,11 @@ int main(int argc, char *argv[])
 				usage();
 				return EXIT_SUCCESS;
 		}
+	}
+	
+	while(TRUE){
+
+		display_prompt();
 	}
 	return 0;
 }
