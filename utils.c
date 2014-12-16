@@ -8,6 +8,7 @@
 
 #include<readline/readline.h>
 #include"main.h"
+#include"stack.h"
 
 void stdErr(){
 	exit(1);
@@ -64,9 +65,25 @@ char cmd[ARG_MAX];
 int sperateCMD(char* in){
 	int i=0;
 	int len = strlen(in);
+	/* flag to determine if we should skip the space in 
+	a string */
+	int findQuote = 0;
+	/* Stack to valid the quotes pair */
+	Stack	stk;
+	Stack_Init(&stk);
+
 	for(; i<len; i++){
-		if(in[i] == ' ')
+		if(in[i] == ' ' && !findQuote)
 			in[i]='\0';
+		if( in[i] == '\'' || in[i] == '\"' ){
+			if( stk.size > 0 && Stack_Top(&stk) == in[i])
+				Stack_Pop(&stk);
+			else
+				Stack_Push(&stk,in[i]);
+			findQuote++;
+			if(stk.size == 0)
+				findQuote = 0;
+		}
 	}
 	return len;
 }

@@ -1,5 +1,4 @@
 #include <limits.h>
-
 /* The number will be invalid if all the arguments' length are smaller than 4 */
 #define NUM_ARG_MAX (2097152/4-1)
 
