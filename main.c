@@ -40,9 +40,12 @@ int main(int argc, char *argv[])
 		char* param[NUM_ARG_MAX] = {NULL};
 		in = display_prompt();
 		read_cmd(in, param);
+		printf("%s justout\n",param[0]);	
 		
-
-		if(strlen(in) == 0 || buildin_cmd(in, param))
+		/* input command */
+		in = param[0];
+		
+		if( strlen(in) == 0 || buildin_cmd(cmd, param))
 			continue;
 		
 		if( fork() != 0){
@@ -51,7 +54,8 @@ int main(int argc, char *argv[])
 			waitpid(-1,&status,0);
 		}
 		else{
-			execvp(cmd,param);				
+			printf("%s exe\n", param[0]);
+			execvp(param[0] , param);				
 		}	
 
 	}

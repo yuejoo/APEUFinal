@@ -7,7 +7,6 @@
 #include<string.h>
 
 #include<readline/readline.h>
-
 #include"main.h"
 
 void stdErr(){
@@ -85,25 +84,33 @@ void read_cmd(char* in, char* param[]){
 
 	if( strcpy(cmd,in) == NULL)
 		stdErr();
-
+	
 	int length = sperateCMD(cmd);
-	if( length == 0){
+	if( length < 0){
 		cmd[0] = '\0';
 	}
 	else{
 		int i=0, index=1;
-		param[0] = cmd;
-		for(i=0; i< length; i++){
-			if(cmd[i] == '\0')
-				param[index++] = &cmd[0]+i+1;
+		for(i=0; i< length; i++)
+			if(cmd[i]!='\0'){
+				param[0] = &cmd[i];
+				break;
+			}
+
+		/* skip the space before the first char in cmd*/
+		int firstItem = i;
+		for(i = firstItem+1; i< length; i++){
+			if(cmd[i] != '\0' && cmd[i-1] == '\0')
+				param[index++] = &cmd[firstItem]+i;
 		}
 	}
 }
 
 
 int buildin_cmd(char* in, char *param[]){
-	if( strcmp(in,"quit")==0 )
+	if( strcmp(in,"quit")==0 ){
 		exit(0);
+	}
 
 	if( strcmp(param[0],"cd")==0 ){
 		if(param[1] == NULL || strcmp(param[1],".") == 0 )
