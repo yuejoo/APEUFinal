@@ -1,9 +1,13 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<pwd.h>
 #include<unistd.h>
 #include<limits.h>
 #include<sys/types.h>
 #include<string.h>
+
+#include<readline/readline.h>
+
 #include"main.h"
 
 #ifndef HOST_NAME_MAX
@@ -43,7 +47,7 @@ void checkHomeDir(char* dir){
 	}
 }
 
-void display_prompt(){
+char* display_prompt(){
 	
 	char hostname[HOST_NAME_MAX];
 	char cwd[PATH_MAX];
@@ -60,8 +64,17 @@ void display_prompt(){
 		stdErr();
 	checkHomeDir(cwd);
 
-	fprintf(stdout,"%s@sish:%s$", hostuser->pw_name, cwd);
+	int lenth = strlen(hostuser->pw_name)+strlen(cwd)+8;
+	char *out;
 
+	if((out = (char*)malloc(lenth)) == NULL)
+		stdErr();
+	strcpy(out, hostuser->pw_name);
+	strcat(out, "@sish:");
+	strcat(out, cwd);
+	strcat(out, "$");
+
+	return out;
 }
 
 char cmd[ARG_MAX];
@@ -79,6 +92,11 @@ int sperateCMD(char* in){
 
 void read_cmd(char* in, char* param[]){
 	
+	char *tempCmd;
+	tempCmd  = readline(in);
+	free(in);
+	in = tempCmd;
+
 	if( strcpy(cmd,in) == NULL)
 		stdErr();
 	

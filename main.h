@@ -1,6 +1,6 @@
 
 /* display promopt on the screen */
-void display_prompt();
+char* display_prompt();
 /* read input from terminal */
 void read_cmd(char* command, char* param[]);
 

@@ -35,8 +35,10 @@ int main(int argc, char *argv[])
 	}
 	
 	while(TRUE){
-
-		display_prompt();
+		char* in=NULL;
+		char* param[20];
+		in = display_prompt();
+		read_cmd(in, param);	
 	}
 	return 0;
 }
