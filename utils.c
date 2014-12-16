@@ -10,25 +10,6 @@
 
 #include"main.h"
 
-#ifndef HOST_NAME_MAX
-#define HOST_NAME_MAX 255
-#endif
-
-#ifndef PATH_MAX
-#define PATH_MAX 4096
-#endif
-
-#ifndef FILENAME_MAX
-#define FILENAME_MAX 256
-#endif
-
-#define SUCCESS 0
-
-#ifndef ARG_MAX
-/* Get from getconf ARG_MAX in Ubuntu 14.04 */
-#define ARG_MAX 2097152
-#endif
-
 void stdErr(){
 	exit(1);
 }
@@ -47,32 +28,34 @@ void checkHomeDir(char* dir){
 	}
 }
 
+char hostname[HOST_NAME_MAX];
+char pwd[PATH_MAX];
+struct passwd* hostuser;
+
 char* display_prompt(){
-	
-	char hostname[HOST_NAME_MAX];
-	char cwd[PATH_MAX];
-	struct passwd* hostuser;
-	
+
+
 	if( gethostname(hostname,HOST_NAME_MAX) != SUCCESS)
 		stdErr();
-	
+
 	/* hostuser to get both username and the pwd */
 	if( (hostuser = getpwuid(getuid()))  == NULL)
 		stdErr();
 
-	if( getcwd(cwd, PATH_MAX) == NULL)
+	if( getcwd(pwd, PATH_MAX) == NULL)
 		stdErr();
-	checkHomeDir(cwd);
 
-	int lenth = strlen(hostuser->pw_name)+strlen(cwd)+8;
+	checkHomeDir(pwd);
+
+	int lenth = strlen(hostuser->pw_name)+strlen(pwd)+9;
 	char *out;
 
 	if((out = (char*)malloc(lenth)) == NULL)
 		stdErr();
 	strcpy(out, hostuser->pw_name);
 	strcat(out, "@sish:");
-	strcat(out, cwd);
-	strcat(out, "$");
+	strcat(out, pwd);
+	strcat(out, "$ ");
 
 	return out;
 }
@@ -91,7 +74,7 @@ int sperateCMD(char* in){
 
 
 void read_cmd(char* in, char* param[]){
-	
+
 	char *tempCmd;
 	tempCmd  = readline(in);
 	free(in);
@@ -99,17 +82,47 @@ void read_cmd(char* in, char* param[]){
 
 	if( strcpy(cmd,in) == NULL)
 		stdErr();
-	
+
 	int length = sperateCMD(cmd);
 	if( length == 0){
 		cmd[0] = '\0';
 	}
 	else{
-		int i=0, index=0;
+		int i=0, index=1;
+		param[0] = cmd;
 		for(i=0; i< length; i++){
 			if(cmd[i] == '\0')
-				param[index] = &cmd[0]+i+1;
+				param[index++] = &cmd[0]+i+1;
 		}
 	}
+}
 
+
+int buildin_cmd(char* in, char *param[]){
+	if( strcmp(in,"quit")==0 )
+		exit(0);
+
+	if( strcmp(param[0],"cd")==0 ){
+		printf("I'm cd\n");
+		if(param[1] == NULL || strcmp(param[1],".") == 0 )
+			return 1;
+		if( strcmp(param[1],"..") == 0)
+			chdir("../");
+		else{
+			chdir(param[1]);	
+		}
+
+		return 1;	
+	}
+	if( strcmp(in,"echo")==0 ){
+		int index = 1;
+		while(param[index] != NULL){
+			fprintf(stdout, "%s", param[index]);
+			index++;
+			if(param[index] != NULL)
+				fprintf(stdout, " ");
+		}
+		return 1;
+	}
+	return 0;
 }
