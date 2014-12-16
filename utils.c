@@ -77,8 +77,11 @@ void read_cmd(char* in, char* param[]){
 
 	char *tempCmd;
 	tempCmd  = readline(in);
+	/* Handle the non-input in cmd */
 	free(in);
 	in = tempCmd;
+	if(strlen(in) == 0)
+		return;
 
 	if( strcpy(cmd,in) == NULL)
 		stdErr();
@@ -103,7 +106,6 @@ int buildin_cmd(char* in, char *param[]){
 		exit(0);
 
 	if( strcmp(param[0],"cd")==0 ){
-		printf("I'm cd\n");
 		if(param[1] == NULL || strcmp(param[1],".") == 0 )
 			return 1;
 		if( strcmp(param[1],"..") == 0)

@@ -40,7 +40,9 @@ int main(int argc, char *argv[])
 		char* param[NUM_ARG_MAX] = {NULL};
 		in = display_prompt();
 		read_cmd(in, param);
-		if(buildin_cmd(in, param))
+		
+
+		if(strlen(in) == 0 || buildin_cmd(in, param))
 			continue;
 		
 		if( fork() != 0){
