@@ -10,9 +10,35 @@
 #include"main.h"
 #include"stack.h"
 
+char* makeOperator(char in){
+	char *temp = (char*)malloc(3);
+	temp[0] = in;
+	temp[1] = '\0';
+	temp[2] = '\0';
+	if(in == 'd'){
+		temp[0] = '>';
+		temp[1] = '>';
+	}
+	return temp;
+}
+
 void stdErr(){
 	exit(1);
 }
+
+void releaseMemory(char* param[]){
+	int index=0;
+	while(param[index] != NULL){
+		if(param[index][0] == '>' || 
+		   param[index][0] == '<' || 
+		   param[index][0] == '|' || 
+		   param[index][0] == '&'){
+		   	free(param[index]);
+		 }
+		 index++;
+	}
+}
+
 
 void checkHomeDir(char* dir){
 	char* tempdir;
@@ -89,15 +115,20 @@ int sperateCMD(char* in){
 }
 
 
-void read_cmd(char* in, char* param[]){
+int read_cmd(char* in, char* param[]){
 
 	char *tempCmd;
+	 
 	tempCmd  = readline(in);
+	int paraNum;
 	/* Handle the non-input in cmd */
 	free(in);
 	in = tempCmd;
-	if(strlen(in) == 0)
-		return;
+	
+	if(strlen(in) == 0){
+		param[0] = in;
+		return 0;
+	}
 
 	if( strcpy(cmd,in) == NULL)
 		stdErr();
@@ -117,14 +148,28 @@ void read_cmd(char* in, char* param[]){
 		/* skip the space before the first char in cmd*/
 		int firstItem = i;
 		for(i = firstItem+1; i< length; i++){
-			if(cmd[i] != '\0' && cmd[i-1] == '\0')
+			if(cmd[i] == '>' || cmd[i] == '<' || cmd[i] == '|' || cmd[i] == '&'){
+				if(cmd[i+1] == '>' && cmd[i] == '>'){
+					param[index++] = makeOperator('d');
+					cmd[i+1] = '\0';cmd[i]='\0';
+				}
+				else{
+					param[index++] = makeOperator(cmd[i]);
+					cmd[i] = '\0';
+				}
+			}
+			else if(cmd[i] != '\0' && cmd[i-1] == '\0')
 				param[index++] = &cmd[firstItem]+i;
 		}
+		paraNum = index;
 	}
+	return paraNum;
 }
 
 
 int buildin_cmd(char* in, char *param[]){
+	in = param[0];
+	
 	if( strcmp(in,"quit")==0 ){
 		exit(0);
 	}
@@ -138,7 +183,7 @@ int buildin_cmd(char* in, char *param[]){
 			chdir(param[1]);	
 		}
 
-		return 1;	
+		return 0;	
 	}
 	if( strcmp(in,"echo")==0 ){
 		int index = 1;
@@ -148,7 +193,7 @@ int buildin_cmd(char* in, char *param[]){
 			if(param[index] != NULL)
 				fprintf(stdout, " ");
 		}
-		return 1;
+		return 0;
 	}
 	return 0;
 }

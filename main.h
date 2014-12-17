@@ -21,15 +21,31 @@
 #define ARG_MAX 2097152
 #endif
 
+#define PIPED 16
+#define REDIRECT_APPEND 8
+#define REDIRECT_OUT 4
+#define REDIRECT_IN 2
+
 
 extern char cmd[ARG_MAX]; 
 
 /* display promopt on the screen */
 char* display_prompt();
 /* read input from terminal */
-void read_cmd(char* command, char* param[]);
-
+int read_cmd(char* command, char* param[]);
+void releaseMemory(char* in[]);
 /* Standard Out */
 void stdErr();
 
 int buildin_cmd(char* in, char* param[]);
+
+struct parseinfo{
+	int flag;
+	char* infile;
+	char* outfile;
+	char* command2;
+	char** parameters2;
+};
+typedef struct parseinfo parseinfo;
+
+int parse(char**, int, parseinfo *);
