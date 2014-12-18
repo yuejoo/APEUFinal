@@ -25,10 +25,6 @@ void usage()
 void voidFun(){
 	fprintf(stdout,"\n");
 }
-void voidOut(){
-	printf("catched \n");
-	exit(EXIT_SUCCESS);
-}
 
 int main(int argc, char *argv[])
 {
@@ -75,7 +71,7 @@ int main(int argc, char *argv[])
 
 		parseinfo info;
 		int numcmd = parse(param,&paraNum,&info);
-		
+
 		if(info.flag & 1){
 			backGround = 1;
 		}

@@ -108,6 +108,7 @@ int sperateCMD(char* in){
 		if(in[i] == ' ' && !findQuote)
 			in[i]='\0';
 		if( in[i] == '\'' || in[i] == '\"' ){
+
 			if( stk.size > 0 && Stack_Top(&stk) == in[i])
 				Stack_Pop(&stk);
 			else
@@ -115,6 +116,7 @@ int sperateCMD(char* in){
 			findQuote++;
 			if(stk.size == 0)
 				findQuote = 0;
+			in[i] = '\0';
 		}
 	}
 	return len;
@@ -201,10 +203,13 @@ int buildin_cmd(char* in, char *param[]){
 		if(strcmp(param[1],".") == 0 ){
 			return 1;
 		}
-		if( strcmp(param[1],"..") == 0)
-			chdir("../");
+		if( strcmp(param[1],"..") == 0){
+			if(chdir("../") < 0)
+				stdErr("No such directory.");
+		}
 		else{
-			chdir(param[1]);	
+			if(chdir(param[1]) < 0)
+				stdErr("No such directory.");
 		}
 
 		return 1;	
