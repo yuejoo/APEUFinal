@@ -30,6 +30,7 @@
 extern char cmd[ARG_MAX]; 
 extern int xflg;
 extern int err;
+extern int cflg;
 /* display promopt on the screen */
 char* display_prompt();
 /* read input from terminal */

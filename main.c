@@ -26,12 +26,14 @@ void voidFun(){
 	fprintf(stdout,"\n");
 }
 void voidOut(){
-	exit(0);
+	printf("catched \n");
+	exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char *argv[])
 {
 	int ch;
+	char* cinput;
 	while ((ch = getopt(argc, argv, "xc:"))!= -1)
 	{
 		switch (ch)
@@ -40,6 +42,8 @@ int main(int argc, char *argv[])
 				xflg = 1;
 				break;
 			case 'c':
+				cflg = 1;
+				cinput = optarg;
 				break;
 			default:
 				usage();
@@ -52,33 +56,43 @@ int main(int argc, char *argv[])
 	close(STDOUT_FILENO);
 	close(STDIN_FILENO);
 	signal(SIGINT,voidFun);
+	int backGround = 0;
 	while(TRUE){
 		dup2(old_in, STDIN_FILENO);
 		dup2(old_out, STDOUT_FILENO);
-
 		int paraNum = 0;
 		int pipefd[2];
 		char* in=NULL;
 		char* param[NUM_ARG_MAX] = {NULL};
 		char** curParam = param;
 		in = display_prompt();
-		paraNum = read_cmd(in, param);
-
+		if(!cflg)
+			paraNum = read_cmd(in, param);
+		else
+			paraNum = read_cmd(cinput, param);
 		if( paraNum == 0 )
 			continue;
 
 		parseinfo info;
 		int numcmd = parse(param,&paraNum,&info);
-
+		
+		if(info.flag & 1){
+			backGround = 1;
+		}
+		else
+			backGround = 0;
+	
 		if(pipe(pipefd)< 0 )
 			stdErr( "Can not create pipe");
+		
 		if( buildin_cmd(cmd, param))
 			continue;
 		/* input command */
 		int chpid;
 		int status = 0;
 		if( (chpid = fork()) != 0){
-			waitpid(chpid,&status,0);
+			if(!backGround)
+				wait(&status);
 		}
 		else{
 			int indexCmd = 0;
@@ -142,8 +156,10 @@ int main(int argc, char *argv[])
 						if( (exestate =  execvp( *curParam, curParam)) == -1)
 							stdErr(CMD_NOT_FOUND);
 					}
+					return 0;
 				}
-				wait(NULL);
+				if(!backGround)
+					wait(NULL);
 				if(exestate != -1)
 					err = 0;
 				else
@@ -167,8 +183,10 @@ int main(int argc, char *argv[])
 				indexCmd++;
 			}
 			releaseMemory(param);
-		}	
-
+			return EXIT_SUCCESS;
+		}
+		if(cflg)
+			break;
 	}
 	return 0;
 }

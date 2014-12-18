@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<pwd.h>
+#include<signal.h>
 #include<unistd.h>
 #include<limits.h>
 #include<sys/types.h>
@@ -119,17 +120,20 @@ int sperateCMD(char* in){
 	return len;
 }
 
-
 int read_cmd(char* in, char* param[]){
 	
 	
 	char *tempCmd;
-
-	tempCmd  = readline(in);
+		
+	if(!cflg)
+		tempCmd  = readline(in);
 	int paraNum;
 	/* Handle the non-input in cmd */
-	free(in);
-	in = tempCmd;
+	
+	if(!cflg){
+		free(in);
+		in = tempCmd;
+	}
 
 	if( in == NULL || strlen(in) == 0){
 		param[0] = in;
@@ -177,6 +181,8 @@ int buildin_cmd(char* in, char *param[]){
 	in = param[0];
 
 	if( strcmp(in,"exit")==0 ){
+		if(xflg)
+			fprintf(stderr,"+ exit\n");
 		exit(0);
 	}
 	
