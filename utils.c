@@ -30,12 +30,12 @@ void releaseMemory(char* param[]){
 	int index=0;
 	while(param[index] != NULL){
 		if(param[index][0] == '>' || 
-		   param[index][0] == '<' || 
-		   param[index][0] == '|' || 
-		   param[index][0] == '&'){
-		   	free(param[index]);
-		 }
-		 index++;
+				param[index][0] == '<' || 
+				param[index][0] == '|' || 
+				param[index][0] == '&'){
+			free(param[index]);
+		}
+		index++;
 	}
 }
 
@@ -92,7 +92,7 @@ int sperateCMD(char* in){
 	int i=0;
 	int len = strlen(in);
 	/* flag to determine if we should skip the space in 
-	a string */
+	   a string */
 	int findQuote = 0;
 	/* Stack to valid the quotes pair */
 	Stack	stk;
@@ -118,13 +118,13 @@ int sperateCMD(char* in){
 int read_cmd(char* in, char* param[]){
 
 	char *tempCmd;
-	 
+
 	tempCmd  = readline(in);
 	int paraNum;
 	/* Handle the non-input in cmd */
 	free(in);
 	in = tempCmd;
-	
+
 	if(strlen(in) == 0){
 		param[0] = in;
 		return 0;
@@ -132,7 +132,7 @@ int read_cmd(char* in, char* param[]){
 
 	if( strcpy(cmd,in) == NULL)
 		stdErr();
-	
+
 	int length = sperateCMD(cmd);
 	if( length < 0){
 		cmd[0] = '\0';
@@ -169,7 +169,7 @@ int read_cmd(char* in, char* param[]){
 
 int buildin_cmd(char* in, char *param[]){
 	in = param[0];
-	
+
 	if( strcmp(in,"quit")==0 ){
 		exit(0);
 	}
@@ -184,16 +184,6 @@ int buildin_cmd(char* in, char *param[]){
 		}
 
 		return 0;	
-	}
-	if( strcmp(in,"echo")==0 ){
-		int index = 1;
-		while(param[index] != NULL){
-			fprintf(stdout, "%s", param[index]);
-			index++;
-			if(param[index] != NULL)
-				fprintf(stdout, " ");
-		}
-		return 0;
 	}
 	return 0;
 }

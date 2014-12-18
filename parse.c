@@ -11,16 +11,16 @@ int parseInfoInit(parseinfo* info){
 }
 
 
-int parse(char** param, int paraNum, parseinfo* info){
+int parse(char** param, int* para, parseinfo* info){
 	int i;
 	parseInfoInit(info);
-
+	int numberofCommand=1;	
+	int paraNum = (*para);
 	if( strcmp(param[paraNum-1],"&") == 0){
 		info->flag |= 1;
 		param[paraNum-1] = NULL;
 		paraNum--;
 	}
-
 	for(i=0; i<paraNum;){
 		
 		if(strcmp(param[i],"<")==0)
@@ -56,12 +56,15 @@ int parse(char** param, int paraNum, parseinfo* info){
 			if(*temp == '/')
 				temp++;
 			info->parameters2[0] = temp;
+			numberofCommand++;
+			i++;
 			break;
 		}
 		else
 			i++;
 	}
-
-	return 0;
+	
+	(*para) -= i;
+	return numberofCommand;
 
 }

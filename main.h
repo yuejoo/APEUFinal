@@ -48,4 +48,4 @@ struct parseinfo{
 };
 typedef struct parseinfo parseinfo;
 
-int parse(char**, int, parseinfo *);
+int parse(char** para, int* in, parseinfo * param);
