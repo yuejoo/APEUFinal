@@ -7,26 +7,37 @@
 #include <fcntl.h>
 #include <string.h>
 #include "main.h"
+#include <signal.h>
+#include <errno.h>
 #define TRUE 1
 #define MAX_PIPES 20
 
-int xflg,cflg;
+#define CMD_NOT_FOUND "-sish: command not found"
 
+int xflg,cflg;
+int err=0;
 void usage()
 {
 	printf("Usage: sish [ −x] [ -c command]\n");
 	exit(EXIT_FAILURE);
 }
 
+void voidFun(){
+	fprintf(stdout,"\n");
+}
+void voidOut(){
+	exit(0);
+}
+
 int main(int argc, char *argv[])
 {
 	int ch;
-	while ((ch = getopt(argc, argv, "dehp:s:"))!= -1)
+	while ((ch = getopt(argc, argv, "xc:"))!= -1)
 	{
 		switch (ch)
 		{
 			case 'x':
-				usage();
+				xflg = 1;
 				break;
 			case 'c':
 				break;
@@ -40,7 +51,7 @@ int main(int argc, char *argv[])
 	old_in = dup(STDIN_FILENO);
 	close(STDOUT_FILENO);
 	close(STDIN_FILENO);
-	
+	signal(SIGINT,voidFun);
 	while(TRUE){
 		dup2(old_in, STDIN_FILENO);
 		dup2(old_out, STDOUT_FILENO);
@@ -55,16 +66,12 @@ int main(int argc, char *argv[])
 
 		if( paraNum == 0 )
 			continue;
-		if( strcmp(param[0],"exit") == 0){
-			printf("quit");
-			exit(0);
-		}
 
 		parseinfo info;
 		int numcmd = parse(param,&paraNum,&info);
 
 		if(pipe(pipefd)< 0 )
-			stdErr();
+			stdErr( "Can not create pipe");
 		if( buildin_cmd(cmd, param))
 			continue;
 		/* input command */
@@ -77,9 +84,17 @@ int main(int argc, char *argv[])
 			int indexCmd = 0;
 			int re = 0;
 			int tpipe = 0;
-			
+		    
+		    int exestate = 0;
 
 			while( numcmd >= 1){
+				if(xflg){
+					fprintf(stderr,"+ %s", curParam[0]);
+					int tii = 1;
+					while( curParam[tii] != NULL && strcmp(curParam[tii], "|") != 0)
+						fprintf(stderr," %s", curParam[tii++]);
+					fprintf(stderr,"\n");
+				}
 				int chpid1=0;
 				pipe(pipefd);
 				if( (chpid1=fork()) == 0){
@@ -119,15 +134,20 @@ int main(int argc, char *argv[])
 						if(strcmp(curParam[1], "$$")  == 0)
 						fprintf(stdout,"%d\n", getpid());
 						else if(strcmp(curParam[1],"$?")==0 )
-						fprintf(stdout,"lastestCmd\n" );
+						fprintf(stdout,"%d\n", err);
 						else 
 						fprintf(stdout,"%s\n",getenv(curParam[1]+1));
 					}
-					else
-						execvp( *curParam, curParam);
-
+					else{
+						if( (exestate =  execvp( *curParam, curParam)) == -1)
+							stdErr(CMD_NOT_FOUND);
+					}
 				}
 				wait(NULL);
+				if(exestate != -1)
+					err = 0;
+				else
+					err = 127;
 				close(pipefd[1]);
 				tpipe = pipefd[0];
 				/* move to next cmd */

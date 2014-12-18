@@ -28,14 +28,15 @@
 
 
 extern char cmd[ARG_MAX]; 
-
+extern int xflg;
+extern int err;
 /* display promopt on the screen */
 char* display_prompt();
 /* read input from terminal */
 int read_cmd(char* command, char* param[]);
 void releaseMemory(char* in[]);
 /* Standard Out */
-void stdErr();
+void stdErr(char* in);
 
 int buildin_cmd(char* in, char* param[]);
 

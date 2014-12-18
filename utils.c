@@ -5,7 +5,7 @@
 #include<limits.h>
 #include<sys/types.h>
 #include<string.h>
-
+#include<errno.h>
 #include<readline/readline.h>
 #include"main.h"
 #include"stack.h"
@@ -22,8 +22,12 @@ char* makeOperator(char in){
 	return temp;
 }
 
-void stdErr(){
-	exit(1);
+void stdErr(char* in){
+	if(errno == ENOENT)
+		fprintf(stderr, "%s\n", in);
+	else
+		perror(in);
+	return;
 }
 
 void releaseMemory(char* param[]){
@@ -62,22 +66,23 @@ char* display_prompt(){
 
 
 	if( gethostname(hostname,HOST_NAME_MAX) != SUCCESS)
-		stdErr();
+		stdErr("Can not get the host name");
 
 	/* hostuser to get both username and the pwd */
 	if( (hostuser = getpwuid(getuid()))  == NULL)
-		stdErr();
+		stdErr("Can not get the user info");
 
 	if( getcwd(pwd, PATH_MAX) == NULL)
-		stdErr();
+		stdErr("Can not get the current path");
 
 	checkHomeDir(pwd);
+	setenv("SHELL", pwd, 1);
 
 	int lenth = strlen(hostuser->pw_name)+strlen(pwd)+9;
 	char *out;
 
 	if((out = (char*)malloc(lenth)) == NULL)
-		stdErr();
+		stdErr("Can not allocate space");
 	strcpy(out, hostuser->pw_name);
 	strcat(out, "@sish:");
 	strcat(out, pwd);
@@ -116,7 +121,8 @@ int sperateCMD(char* in){
 
 
 int read_cmd(char* in, char* param[]){
-
+	
+	
 	char *tempCmd;
 
 	tempCmd  = readline(in);
@@ -125,13 +131,13 @@ int read_cmd(char* in, char* param[]){
 	free(in);
 	in = tempCmd;
 
-	if(strlen(in) == 0){
+	if( in == NULL || strlen(in) == 0){
 		param[0] = in;
 		return 0;
 	}
 
 	if( strcpy(cmd,in) == NULL)
-		stdErr();
+		stdErr("err in strycpy()");
 
 	int length = sperateCMD(cmd);
 	if( length < 0){
@@ -170,20 +176,32 @@ int read_cmd(char* in, char* param[]){
 int buildin_cmd(char* in, char *param[]){
 	in = param[0];
 
-	if( strcmp(in,"quit")==0 ){
+	if( strcmp(in,"exit")==0 ){
 		exit(0);
 	}
-
+	
 	if( strcmp(param[0],"cd")==0 ){
-		if(param[1] == NULL || strcmp(param[1],".") == 0 )
+		if(xflg){
+			fprintf(stderr,"+ %s", param[0]);
+			if(param[1] != NULL)
+				fprintf(stderr," %s\n", param[1]);
+			else
+				fprintf(stderr, "\n");
+		} 
+		if(param[1] == NULL){
+			chdir("/home");
 			return 1;
+		}
+		if(strcmp(param[1],".") == 0 ){
+			return 1;
+		}
 		if( strcmp(param[1],"..") == 0)
 			chdir("../");
 		else{
 			chdir(param[1]);	
 		}
 
-		return 0;	
+		return 1;	
 	}
 	return 0;
 }
